@@ -1,4 +1,5 @@
 # InkQuest (WIP)
+This is an AI-powered text adventure device using an ESP32, an e-paper display and a rotary encoder. It is powered by Gemini to generate infinite stories and choices.
 
 ![Hero Image](https://github.com/Jeremy-Ngai-Sew-Poh/InkQuest/blob/main/images/inkquest_demo.png)
 
