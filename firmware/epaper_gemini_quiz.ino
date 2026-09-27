@@ -33,7 +33,7 @@ volatile bool shouldResetWiFi = false;
 RTC_DATA_ATTR String wifiSSID = "name";
 
 // Gemini API
-const char* apikey = "AQ.Ab8RN6Jij4TnXulrIYHlXcuD4izzFZjHuZxj-fB_yFsUPvgc_Q";
+const char* apikey = "YOUR_GEMINI_API";
 const char* url = "https://generativelanguage.googleapis.com/v1/models/gemini-3.1-flash-lite:generateContent?key=";
 
 char* geminiPrompt = "You are the game master for a text adventure game."
