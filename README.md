@@ -27,5 +27,8 @@ InkQuest uses ESP32-C3 microcontroller to connect to WiFi and query the Gemini A
 | 0805 Capacitor | 470nF | 1 | [AliExpress](https://s.click.aliexpress.com/e/_c2xbXOcz) |
 | 0805 Capacitor | 100uF | 1 | [AliExpress](https://s.click.aliexpress.com/e/_c2xbXOcz) |
 
+## PCB Schematics
+![Schematics Image](images/inkquest_schematics.png)
+
 ## License
 This project is licensed under the GNU General Public License v2.0. See the [LICENSE](LICENSE) file for details.
