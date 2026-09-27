@@ -1,5 +1,7 @@
 # InkQuest (WIP)
 
+![Hero Image](https://github.com/Jeremy-Ngai-Sew-Poh/InkQuest/blob/main/images/inkquest_demo.png)
+
 ## Design
 
 ## Repository Structure
