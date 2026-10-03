@@ -6,6 +6,9 @@ This is an AI-powered text adventure device using an ESP32, an e-paper display a
 ## Design
 InkQuest uses ESP32-C3 microcontroller to connect to WiFi and query the Gemini API. Gemini generates an interactive story segment and choices for the player in JSON format. Then the text is shown on the e-paper display. The user can use the rotary encoder to scroll through the text and select their next action. Each choice is returned to the history buffer on the ESP32 and is sent back to Gemini to generate the next story segment.
 
+## Background
+After I have been working with e-paper for a while, I wanted to make a handheld interactive device rather than just another generic weather station. I'm inspired by those e-paper readers, and why not make it interactive and fun?? 
+
 ## Repository Structure
 * `firmware/`: Arduino IDE flash code.
 * `hardware/`: PCB Gerber files and schematics.
