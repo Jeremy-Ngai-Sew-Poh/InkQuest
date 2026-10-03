@@ -34,5 +34,8 @@ After I have been working with e-paper for a while, I wanted to make a handheld 
 ![Schematics Image](images/inkquest_schematics.png)
 ![PCB Image](images/inkquest_pcb.jpg)
 
+## Acknowledgements
+* Special thanks to [Hack Club](https://hackclub.com/) for supporting high school makers and open-source hardware projects!
+
 ## License
 This project is licensed under the GNU General Public License v2.0. See the [LICENSE](LICENSE) file for details.
