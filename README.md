@@ -1,7 +1,10 @@
-# InkQuest (WIP)
-This is an AI-powered text adventure device using an ESP32, an e-paper display and a rotary encoder. It is powered by Gemini to generate infinite stories and choices.
+# InkQuest
+This is an AI-powered text adventure device using an ESP32, an e-paper display and a rotary encoder. It is powered by Gemini to generate infinite stories and choices. (Work in Progress)
 
-![Hero Image](images/inkquest_demo.png)
+[![Watch the video](images/inkquest_demo.png)](https://vimeo.com)
+↑ click to watch demo!
+
+![PCB Image](images/inkquest_cad_assembly_front.png)
 
 ## Design
 InkQuest uses ESP32-C3 microcontroller to connect to WiFi and query the Gemini API. Gemini generates an interactive story segment and choices for the player in JSON format. Then the text is shown on the e-paper display. The user can use the rotary encoder to scroll through the text and select their next action. Each choice is returned to the history buffer on the ESP32 and is sent back to Gemini to generate the next story segment.
