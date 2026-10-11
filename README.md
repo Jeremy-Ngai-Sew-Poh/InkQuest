@@ -13,6 +13,7 @@ InkQuest uses ESP32-C3 microcontroller to connect to WiFi and query the Gemini A
 After I have been working with e-paper for a while, I wanted to make a handheld interactive device rather than just another generic weather station. I'm inspired by those e-paper readers, and why not make it interactive and fun?? 
 
 ## Repository Structure
+* `cad/`: CAD assembly in .step file.
 * `firmware/`: Arduino IDE flash code.
 * `hardware/`: PCB Gerber files and schematics.
 * `images/`: Project images.
