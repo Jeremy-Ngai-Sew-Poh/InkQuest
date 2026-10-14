@@ -19,27 +19,28 @@ After I have been working with e-paper for a while, I wanted to make a handheld 
 * `images/`: Project images.
 
 ## Bill of Materials (BOM)
-| Component | Variation | Quantity | Link |
-| -------- | -------- | -------- | -------- |
-| XIAO ESP32-C3 | - | 1 | [AliExpress](https://s.click.aliexpress.com/e/_c3eOCW2h) |
-| WeAct 2.9inch E-Paper Display | 2.9 inch | 1 | [AliExpress](https://s.click.aliexpress.com/e/_c4pj5khn) |
-| 603450 Li-Po Battery | - | 1 | [AliExpress](https://s.click.aliexpress.com/e/_c3nU6hTJ) |
-| JST-PH Connector | 2P | 1 | [AliExpress](https://s.click.aliexpress.com/e/_c3N3rmhr) |
-| Rotary Encoder EC11 | 20mm D shaft | 1 | [AliExpress](https://s.click.aliexpress.com/e/_c4pAwN4D) |
-| WS2812B NeoPixel LED 5050 | - | 1 | [AliExpress](https://s.click.aliexpress.com/e/_c4lxeFXX) |
-| PH3.5 Low Profile Pin Connector | 2x4 Male, 2x4 Female | 2 | [AliExpress](https://s.click.aliexpress.com/e/_c2u2lpcp) |
-| 0805 Resistor | 1M | 2 | [AliExpress](https://s.click.aliexpress.com/e/_c4bDhEHP) |
-| 0805 Resistor | 330 | 1 | [AliExpress](https://s.click.aliexpress.com/e/_c4bDhEHP) |
-| 0805 Resistor | 10K | 3 | [AliExpress](https://s.click.aliexpress.com/e/_c4bDhEHP) |
-| 0805 Capacitor | 470nF | 1 | [AliExpress](https://s.click.aliexpress.com/e/_c2xbXOcz) |
-| 0805 Capacitor | 100uF | 1 | [AliExpress](https://s.click.aliexpress.com/e/_c2xbXOcz) |
+
+| Component | Variation | Quantity | Price | Link |
+| -------- | -------- | -------- | -------- | -------- |
+| XIAO ESP32-C3 | - | 1 | $5.00 | [AliExpress](https://s.click.aliexpress.com/e/_c3eOCW2h) |
+| WeAct 2.9inch E-Paper Display | 2.9 inch | 1 | $6.00 | [AliExpress](https://s.click.aliexpress.com/e/_c4pj5khn) |
+| 603450 Li-Po Battery | - | 1 | $7.00 | [AliExpress](https://s.click.aliexpress.com/e/_c3nU6hTJ) |
+| JST-PH Connector | 2P | 1 | $2.00 | [AliExpress](https://s.click.aliexpress.com/e/_c3N3rmhr) |
+| Rotary Encoder EC11 | 20mm D shaft | 1 | $1.00 | [AliExpress](https://s.click.aliexpress.com/e/_c4pAwN4D) |
+| WS2812B NeoPixel LED 5050 | - | 1 | $1.00 | [AliExpress](https://s.click.aliexpress.com/e/_c4lxeFXX) |
+| PH3.5 Low Profile Pin Connector | 2x4 Male, 2x4 Female | 2 | $1.60 | [AliExpress](https://s.click.aliexpress.com/e/_c2u2lpcp) |
+| 0805 Resistor | 1M | 2 | $1.00 | [AliExpress](https://s.click.aliexpress.com/e/_c4bDhEHP) |
+| 0805 Resistor | 330 | 1 | $1.00 | [AliExpress](https://s.click.aliexpress.com/e/_c4bDhEHP) |
+| 0805 Resistor | 10K | 3 | $1.00 | [AliExpress](https://s.click.aliexpress.com/e/_c4bDhEHP) |
+| 0805 Capacitor | 470nF | 1 | $1.00 | [AliExpress](https://s.click.aliexpress.com/e/_c2xbXOcz) |
+| 0805 Capacitor | 100uF | 1 | $1.00 | [AliExpress](https://s.click.aliexpress.com/e/_c2xbXOcz) |
 
 ## PCB Schematics
 ![Schematics Image](images/inkquest_schematics.png)
 ![PCB Image](images/inkquest_pcb.jpg)
 
 ## Acknowledgements
-* Special thanks to [Hack Club](https://hackclub.com/) for supporting high school makers and open-source hardware projects!
+* Thanks to Hack Club for supporting high school makers and hardware projects!
 
 ## License
 This project is licensed under the GNU General Public License v2.0. See the [LICENSE](LICENSE) file for details.
