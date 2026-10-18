@@ -32,8 +32,8 @@ After I have been working with e-paper for a while, I wanted to make a handheld 
 | 0805 Resistor | 1M | 2 | $1.00 | [AliExpress](https://s.click.aliexpress.com/e/_c4bDhEHP) |
 | 0805 Resistor | 330 | 1 | $1.00 | [AliExpress](https://s.click.aliexpress.com/e/_c4bDhEHP) |
 | 0805 Resistor | 10K | 3 | $1.00 | [AliExpress](https://s.click.aliexpress.com/e/_c4bDhEHP) |
-| 0805 Capacitor | 470nF | 1 | $1.00 | [AliExpress](https://s.click.aliexpress.com/e/_c2xbXOcz) |
-| 0805 Capacitor | 100uF | 1 | $1.00 | [AliExpress](https://s.click.aliexpress.com/e/_c2xbXOcz) |
+| 0805 Ceramic Capacitor | 470nF | 1 | $1.00 | [AliExpress](https://s.click.aliexpress.com/e/_c2xbXOcz) |
+| 0805 Ceramic Capacitor | 100uF | 1 | $1.00 | [AliExpress](https://s.click.aliexpress.com/e/_c2xbXOcz) |
 
 ## PCB Schematics
 ![Schematics Image](images/inkquest_schematics.png)
