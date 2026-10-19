@@ -11,6 +11,7 @@
 #include "esp_sleep.h"
 #include <vector>
 #include <WiFiManager.h>
+#include <Preferences.h>
 
 constexpr uint8_t csPin = 2;
 constexpr uint8_t dcPin = 7;
@@ -33,7 +34,8 @@ volatile bool shouldResetWiFi = false;
 RTC_DATA_ATTR String wifiSSID = "name";
 
 // Gemini API
-const char* apikey = "YOUR_GEMINI_API";
+Preferences preferences;
+char geminiApiKey[120] = "";
 const char* url = "https://generativelanguage.googleapis.com/v1/models/gemini-3.1-flash-lite:generateContent?key=";
 
 char* geminiPrompt = "You are the game master for a text adventure game."
@@ -57,7 +59,11 @@ volatile int userSelection = 1;
 int batteryPercent = 0;
 float batteryVoltage = 0;
 bool lowBattery = false;
-int error = 0;
+int errorType = 0;
+
+int httpErrorCode = 0;
+String jsonErrorCode = "";
+String jsonInnerErrorCode = "";
 
 volatile int counter = 0;
 int currentStateCLK;
@@ -97,6 +103,11 @@ std::vector<String> wrapTextToWidth(const String& text, int maxWidth);
 void setup() {
   Serial.begin(115200);
 
+  preferences.begin("game-config", false);
+  String savedKey = preferences.getString("gemini_key", "");
+  savedKey.toCharArray(geminiApiKey, sizeof(geminiApiKey));
+  preferences.end();
+
   setupPin();
   checkBattery();
   initDisplay();
@@ -110,9 +121,8 @@ void setup() {
 
 void loop() {
   updateFade();
-  if (error > 0) {
-    displayError(error);
-
+  if (errorType > 0) {
+    displayError(errorType);
   } else {
     switch (screen) {
       case 0:  // WIFI PROMPT
@@ -236,36 +246,30 @@ void fetchGeminiAPI() {
   client.setInsecure();
 
   HTTPClient http;
-  String fullUrl = String(url) + String(apikey);
+  String fullUrl = String(url) + String(geminiApiKey);
 
   if (http.begin(client, fullUrl)) {
     http.addHeader("Content-Type", "application/json");
 
-    // Dynamic document sized to hold the prompt + history
     DynamicJsonDocument doc(4096);
     JsonArray contents = doc.createNestedArray("contents");
 
-    // 1. Add history turns as user/model dialogue
     for (int i = 0; i < historyCount; i++) {
-      // Previous Gemini output
       JsonObject modelTurn = contents.createNestedObject();
       modelTurn["role"] = "model";
       JsonObject modelPart = modelTurn.createNestedArray("parts").createNestedObject();
       modelPart["text"] = gameHistory[i].story;
 
-      // Previous player action
       JsonObject userTurn = contents.createNestedObject();
       userTurn["role"] = "user";
       JsonObject userPart = userTurn.createNestedArray("parts").createNestedObject();
       userPart["text"] = "Player chose: " + gameHistory[i].playerChoice;
     }
 
-    // 2. Add current turn instruction
     JsonObject currentTurn = contents.createNestedObject();
     currentTurn["role"] = "user";
     JsonObject currentPart = currentTurn.createNestedArray("parts").createNestedObject();
-    
-    // System instruction injected into the latest turn
+
     String systemPrompt = String(geminiPrompt);
     if (historyCount > 0) {
       systemPrompt += "\nContinue the story based on the player's last action: \"" + choiceText[choiceSelection] + "\"";
@@ -286,7 +290,6 @@ void fetchGeminiAPI() {
       if (!error) {
         String rawJson = responseDoc["candidates"][0]["content"]["parts"][0]["text"];
 
-        // Clean markdown fencing if Gemini includes it
         rawJson.replace("```json", "");
         rawJson.replace("```", "");
         rawJson.trim();
@@ -301,24 +304,35 @@ void fetchGeminiAPI() {
           choiceText[3] = storyDoc["choiceC"].as<String>();
           choiceText[4] = storyDoc["choiceD"].as<String>();
 
-          Serial.println("--- NEW STORY SEGMENT RECEIVED ---");
+          Serial.println("New Story Segment:");
           Serial.println(longText);
         } else {
           Serial.println("INNER JSON PARSING FAILED");
           Serial.println(innerError.f_str());
+          jsonInnerErrorCode = (innerError.f_str());
+          errorType = 6;
+          update = true;
         }
       } else {
         Serial.println("JSON PARSING FAILED");
         Serial.println(error.f_str());
+        jsonErrorCode = (error.f_str());
+        errorType = 5;
+        update = true;
       }
     } else {
       Serial.println("HTTP REQUEST FAILED");
       Serial.println(httpResponseCode);
+      httpErrorCode = httpResponseCode;
+      errorType = 4;
+      update = true;
     }
 
     http.end();
   } else {
     Serial.println("Error connecting to endpoint");
+    errorType = 3;
+    update = true;
   }
 }
 
@@ -397,11 +411,20 @@ void connectWiFiManager() {
       printCenteredText("Erasing WiFi...", 33);
     } while (display.nextPage());
     wm.resetSettings();
+
+    preferences.begin("game-config", false);
+    preferences.clear();
+    preferences.end();
+    geminiApiKey[0] = '\0';
+
     WiFi.disconnect(true, true);
     delay(100);
     WiFi.mode(WIFI_STA);
     shouldResetWiFi = false;
   }
+
+  WiFiManagerParameter custom_gemini_api_key("gemini_key", "Gemini API Key", geminiApiKey, 120);
+  wm.addParameter(&custom_gemini_api_key);
 
   wm.setAPCallback(configModeCallback);
   wm.setConnectTimeout(20);
@@ -416,12 +439,18 @@ void connectWiFiManager() {
 
   if (!wm.autoConnect("ESP32_Setup")) {
     Serial.println("Failed to connect or portal timed out.");
-    error = 2;
+    errorType = 2;
     update = true;
     return;
   }
 
   Serial.println("WiFi connected successfully");
+
+  strncpy(geminiApiKey, custom_gemini_api_key.getValue(), sizeof(geminiApiKey));
+  preferences.begin("game-config", false);
+  preferences.putString("gemini_key", geminiApiKey);
+  preferences.end();
+
   wifiSSID = wm.getWiFiSSID();
   screen = 2;
   update = true;
@@ -690,7 +719,7 @@ void checkBattery() {
   batteryPercent = result;
 
   if (result == 0) {
-    error = 1;
+    errorType = 1;
     update = true;
   }
 }
@@ -705,22 +734,39 @@ void displayError(int type) {
     update = false;
     display.firstPage();
     do {
+      display.setFont(&FreeSerif12pt7b);
+      display.drawRoundRect(100, 84, 96, 31, 12, GxEPD_BLACK);
+      printCenteredText("OK", 106);
       switch (type) {
         case 1:
-          display.setFont(&FreeSerif12pt7b);
           printCenteredText("Low Battery", 33);
           display.setFont(&FreeSerif9pt7b);
           printCenteredText("Voltage: " + String(batteryVoltage) + " V", 67);
-          display.drawRoundRect(100, 84, 96, 31, 12, GxEPD_BLACK);
-          printCenteredText("OK", 106);
           break;
         case 2:
-          display.setFont(&FreeSerif12pt7b);
           printCenteredText("WiFi Problem", 33);
           display.setFont(&FreeSerif9pt7b);
-          printCenteredText("Voltage: " + String(batteryVoltage) + " V", 67);
-          display.drawRoundRect(100, 84, 96, 31, 12, GxEPD_BLACK);
-          printCenteredText("OK", 106);
+          printCenteredText("Try again", 67);
+          break;
+        case 3:
+          printCenteredText("Endpoint Error", 33);
+          display.setFont(&FreeSerif9pt7b);
+          printCenteredText("Try again", 67);
+          break;
+        case 4:
+          printCenteredText("HTTP Error", 33);
+          display.setFont(&FreeSerif9pt7b);
+          printCenteredText("Error code: " + String(httpErrorCode), 67);
+          break;
+        case 5:
+          printCenteredText("JSON Parsing Error", 33);
+          display.setFont(&FreeSerif9pt7b);
+          printCenteredText("Error code: " + String(jsonErrorCode), 67);
+          break;
+        case 6:
+          printCenteredText("Inner JSON Parsing Error", 33);
+          display.setFont(&FreeSerif9pt7b);
+          printCenteredText("Error code: " + String(jsonInnerErrorCode), 67);
           break;
         default:
           break;
