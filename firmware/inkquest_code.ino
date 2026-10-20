@@ -102,6 +102,7 @@ std::vector<String> wrapTextToWidth(const String& text, int maxWidth);
 
 void setup() {
   Serial.begin(115200);
+  setCpuFrequencyMhz(80);
 
   preferences.begin("game-config", false);
   String savedKey = preferences.getString("gemini_key", "");
@@ -113,7 +114,7 @@ void setup() {
   initDisplay();
 
   strip.begin();
-  strip.setBrightness(25);
+  strip.setBrightness(20);
   strip.show();
 
   lastInputTime = millis();
@@ -139,8 +140,15 @@ void loop() {
         isBusy = true;
         setTargetColor(255, 20, 20);
         showGeminiLoading();
-        fetchGeminiAPI();
-        screen++;
+
+        if (WiFi.status() != WL_CONNECTED) {
+          reconnectWiFi();
+        }
+
+        if (screen == 2) {
+          fetchGeminiAPI();
+          screen++;
+        }
         break;
       case 3:
         isBusy = false;
@@ -250,6 +258,7 @@ void fetchGeminiAPI() {
 
   if (http.begin(client, fullUrl)) {
     http.addHeader("Content-Type", "application/json");
+    http.setTimeout(15000);
 
     DynamicJsonDocument doc(4096);
     JsonArray contents = doc.createNestedArray("contents");
@@ -334,6 +343,9 @@ void fetchGeminiAPI() {
     errorType = 3;
     update = true;
   }
+
+  WiFi.disconnect(true);
+  WiFi.mode(WIFI_OFF);
 }
 
 void showGeminiLoading() {
@@ -477,6 +489,26 @@ void configModeCallback(WiFiManager* myWiFiManager) {
     display.print("Hotspot: ESP32_WiFi");
 
   } while (display.nextPage());
+}
+
+void reconnectWiFi() {
+  Serial.println("Reconnecting WiFi");
+  WiFi.mode(WIFI_STA);
+  WiFi.begin();
+
+  unsigned long startAttemptTime = millis();
+  while (WiFi.status() != WL_CONNECTED && millis() - startAttemptTime < 10000) {
+    delay(500);
+    Serial.print(".");
+  }
+
+  if (WiFi.status() != WL_CONNECTED) {
+    Serial.println("\nFast reconnect failed");
+    screen = 1;
+    update = true;
+  } else {
+    Serial.println("\nWiFi connected successfully");
+  }
 }
 
 std::vector<String> wrapTextToWidth(const String& text, int maxWidth) {
