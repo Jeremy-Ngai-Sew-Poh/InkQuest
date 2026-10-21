@@ -3,10 +3,9 @@
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
 #include <ArduinoJson.h>
-#include <Fonts/FreeSans12pt7b.h>
-#include <Fonts/FreeSans9pt7b.h>
 #include <Fonts/FreeSerif9pt7b.h>
 #include <Fonts/FreeSerif12pt7b.h>
+#include <Fonts/FreeSerif18pt7b.h>
 #include <Adafruit_NeoPixel.h>
 #include "esp_sleep.h"
 #include <vector>
@@ -39,12 +38,13 @@ char geminiApiKey[120] = "";
 const char* url = "https://generativelanguage.googleapis.com/v1/models/gemini-3.1-flash-lite:generateContent?key=";
 
 char* geminiPrompt = "You are the game master for a text adventure game."
-                     "1. Write a trilling around 70 words story segment in second person perspective ('you')"
+                     "1. Write an around 70 words story segment in second person perspective ('you'). It can be adventure, fantasy, action, or comical. Do not repeat common stories that is overused you would write. Be creative and original."
                      "2. Do NOT separate paragraph with a new line. Strictly use '\n'. For example: 'Old Paragraph. \nNew Paragraph'"
                      "3. End the writing with exactly '\nPress to continue...'"
                      "4. Provide EXACTLY 4 distinct, 8 - 10 words action choice for the player"
-                     "5. Return ONLY valid JSON with this exact schema, no markdown formatting or extra text"
-                     "{\"story\":\"...\", \"choiceA\":\"...\", \"choiceB\":\"...\", \"choiceC\":\"...\", \"choiceD\":\"...\"}";
+                     "5. Provide an immersive RGB lighting colour [R, G, B] (value 0-255) that matches the current atmospheric mood of the scene. Avoid repeating the same colour theme from the immediate past turns to keep it fresh."
+                     "6. Return ONLY valid JSON with this exact schema, no markdown formatting or extra text"
+                     "{\"story\":\"...\", \"choiceA\":\"...\", \"choiceB\":\"...\", \"choiceC\":\"...\", \"choiceD\":\"...\", \"rgb\":[r,g,b]}";
 
 String longText = "";
 
@@ -55,6 +55,7 @@ String choiceText[] = { "", "This is choice A. ", "This is choice B.", "This is 
 volatile int screen = 0;
 volatile bool update = true;
 volatile int userSelection = 1;
+bool firstTime = true;
 
 int batteryPercent = 0;
 float batteryVoltage = 0;
@@ -102,7 +103,6 @@ std::vector<String> wrapTextToWidth(const String& text, int maxWidth);
 
 void setup() {
   Serial.begin(115200);
-  setCpuFrequencyMhz(80);
 
   preferences.begin("game-config", false);
   String savedKey = preferences.getString("gemini_key", "");
@@ -153,7 +153,6 @@ void loop() {
       case 3:
         isBusy = false;
         printScrollableTextBox(longText, 10, 8, 270, 114, 21);
-        setTargetColor(20, 255, 20);
         if (digitalRead(keyPin) == LOW) {
           lastInputTime = millis();
           screen++;
@@ -163,7 +162,6 @@ void loop() {
         }
         break;
       case 4:
-        setTargetColor(255, 255, 0);
         isBusy = false;
 
         if (counter > 0) {
@@ -258,7 +256,7 @@ void fetchGeminiAPI() {
 
   if (http.begin(client, fullUrl)) {
     http.addHeader("Content-Type", "application/json");
-    http.setTimeout(15000);
+    http.setTimeout(25000);
 
     DynamicJsonDocument doc(4096);
     JsonArray contents = doc.createNestedArray("contents");
@@ -313,6 +311,16 @@ void fetchGeminiAPI() {
           choiceText[3] = storyDoc["choiceC"].as<String>();
           choiceText[4] = storyDoc["choiceD"].as<String>();
 
+          JsonArray rgbArray = storyDoc["rgb"];
+          if (!rgbArray.isNull() && rgbArray.size() == 3) {
+            uint8_t r = rgbArray[0];
+            uint8_t g = rgbArray[1];
+            uint8_t b = rgbArray[2];
+            setTargetColor(r, g, b);
+          } else {
+            setTargetColor(20, 255, 20);
+          }
+
           Serial.println("New Story Segment:");
           Serial.println(longText);
         } else {
@@ -355,8 +363,18 @@ void showGeminiLoading() {
     display.setPartialWindow(0, 0, display.width(), display.height());
     display.firstPage();
     do {
+      display.drawRoundRect(50, 24, 197, 47, 8, GxEPD_BLACK);
+      display.setFont(&FreeSerif18pt7b);
+      printCenteredText("INKQUEST", 58);
+
       display.setFont(&FreeSerif9pt7b);
-      printCenteredText("Gemini is thinking...", 33);
+      if (firstTime) {
+        printCenteredText("Creating your story...", 100);
+        firstTime = false;
+      } else {
+        printCenteredText("What's next...", 100);
+      }
+
     } while (display.nextPage());
   }
 }
@@ -445,8 +463,12 @@ void connectWiFiManager() {
   display.setPartialWindow(0, 0, display.width(), display.height());
   display.firstPage();
   do {
+    display.drawRoundRect(50, 24, 197, 47, 8, GxEPD_BLACK);
+    display.setFont(&FreeSerif18pt7b);
+    printCenteredText("INKQUEST", 58);
+
     display.setFont(&FreeSerif9pt7b);
-    printCenteredText("Connecting to WiFi...", 33);
+    printCenteredText("Connecting to WiFi...", 100);
   } while (display.nextPage());
 
   if (!wm.autoConnect("ESP32_Setup")) {
@@ -768,7 +790,9 @@ void displayError(int type) {
     do {
       display.setFont(&FreeSerif12pt7b);
       display.drawRoundRect(100, 84, 96, 31, 12, GxEPD_BLACK);
+      display.setFont(&FreeSerif9pt7b);
       printCenteredText("OK", 106);
+      display.setFont(&FreeSerif12pt7b);
       switch (type) {
         case 1:
           printCenteredText("Low Battery", 33);
@@ -820,8 +844,12 @@ void enterDeepSleep() {
   display.firstPage();
   do {
     display.fillScreen(GxEPD_WHITE);
+    display.drawRoundRect(50, 24, 197, 47, 8, GxEPD_BLACK);
+    display.setFont(&FreeSerif18pt7b);
+    printCenteredText("INKQUEST", 58);
+
     display.setFont(&FreeSerif9pt7b);
-    printCenteredText("Press to start!", 33);
+    printCenteredText("Press to start!", 100);
   } while (display.nextPage());
 
   esp_deep_sleep_enable_gpio_wakeup(1ULL << keyPin, ESP_GPIO_WAKEUP_GPIO_LOW);
